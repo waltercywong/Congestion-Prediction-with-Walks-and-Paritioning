@@ -17,7 +17,6 @@ torch.manual_seed(42)
 #     torch.backends.cudnn.deterministic = True
 #     torch.backends.cudnn.benchmark = False
 
-
 def random_walk_no_revisit(start_node, source_to_net, sink_to_net, max_steps=100):
     """
     Performs random walk starting from given node, without revisiting nodes
@@ -70,14 +69,9 @@ def random_walk_no_revisit(start_node, source_to_net, sink_to_net, max_steps=100
         distances.append((node, round(dist.item(), 7)))
     return distances
 
-
-from tqdm import tqdm
-import time
-import pandas as pd
-import torch
-
 design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16]
 valid_pairs_all = []
+num_sources = 5000
 
 # Outer progress bar for designs
 for design in tqdm(design_list, desc="Processing designs", position=0):
@@ -89,16 +83,18 @@ for design in tqdm(design_list, desc="Processing designs", position=0):
     sink_to_net = data['edge_index_sink_to_net']
     node_features = data['node_features']  # Get node features
     
-    pbar = tqdm(total=1000,
+    pbar = tqdm(total=num_sources,
                 desc=f"Random walks for design {design}", 
                 position=1,
                 leave=True,
                 ncols=80,
-                mininterval=0.001,
+                mininterval=0.0001,
                 unit='walks')
     
-    for i in range(1000):
-        start_cell = source_to_net[0][torch.randint(0, len(source_to_net[0]), (1,))].item()
+    start_cell_list = source_to_net[0][torch.randperm(len(source_to_net[0]))[:num_sources]]
+    for i in range(num_sources):
+        start_cell = start_cell_list[i].item()
+        # start_cell = source_to_net[0][torch.randint(0, len(source_to_net[0]), (1,))].item()
         start_net = source_to_net[1][source_to_net[0] == start_cell]
         path = random_walk_no_revisit(start_cell, source_to_net, sink_to_net)
         for j in range(5, len(path)):
@@ -129,6 +125,7 @@ for design in tqdm(design_list, desc="Processing designs", position=0):
         time.sleep(0.01)
     
     pbar.close()
+    print(f"{len(valid_pairs_all)} valid pairs added.     ")
     print(flush=True)
 
 # Convert to DataFrame and save to CSV
