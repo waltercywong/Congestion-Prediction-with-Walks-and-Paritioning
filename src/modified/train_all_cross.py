@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pickle
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -27,6 +28,7 @@ sys.path.append("models/layers/")
 from models.model_att import GNN_node
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 
+import matplotlib.pyplot as plt
 
 # Function to compute accuracy, precision, and recall
 def compute_metrics(true_labels, predicted_labels):
@@ -42,7 +44,7 @@ def compute_metrics(true_labels, predicted_labels):
     return accuracy, precision, recall
 
 ### hyperparameter ###
-test = True # if only test but not train
+test = False # if only test but not train
 restart = False # if restart training
 reload_dataset = False # if reload already processed h_dataset
 
@@ -60,9 +62,19 @@ learning_rate = 0.001
 
 num_epochs = 5
 
+# Add these lists to store losses
+train_losses_node = []
+train_losses_net = []
+val_losses_node = []
+val_losses_net = []
+
 if not reload_dataset:
-    dataset = NetlistDataset(data_dir="data/superblue", load_pe = True, pl = True, processed = True, load_indices=None, use_modified=True)
+    dataset = NetlistDataset(data_dir="data/superblue", load_pe = True, pl = True, processed = True, load_indices=None, use_modified=False)
     h_dataset = []
+    
+    # Create list to store VN features
+    vn_features_list = []
+    
     for data in tqdm(dataset):
         num_instances = data.node_features.shape[0]
         data.num_instances = num_instances
@@ -101,7 +113,15 @@ if not reload_dataset:
         vn_node = torch.concat([global_mean_pool(h_data['node'].x, batch), 
                 global_max_pool(h_data['node'].x, batch)], dim=1)
         
-        # print(vn_node.size(), vn_node) # number of VNs and the tensor of tensors of their features
+        # Save VN features
+        design_num = int(data['design_name'].split('_')[1])  # Extract design number
+        for vn_idx in range(num_vn):
+            vn_features_list.append({
+                'design': design_num,
+                'vn_id': vn_idx,
+                **{f'mean_feature_{i}': vn_node[vn_idx, i].item() for i in range(h_data['node'].x.shape[1])},
+                **{f'max_feature_{i}': vn_node[vn_idx, i + h_data['node'].x.shape[1]].item() for i in range(h_data['node'].x.shape[1])}
+            })
 
         node_demand = (node_demand - torch.mean(node_demand)) / torch.std(node_demand)
         net_hpwl = (net_hpwl - torch.mean(net_hpwl)) / torch.std(net_hpwl)
@@ -111,6 +131,11 @@ if not reload_dataset:
         h_data['variant_data_lst'] = variant_data_lst
         h_dataset.append(h_data)
         
+    # Save VN features to CSV
+    vn_features_df = pd.DataFrame(vn_features_list)
+    vn_features_df.to_csv('vn_features_init.csv', index=False)
+    print(f"Saved initial VN features for {len(vn_features_df)} virtual nodes to vn_features_init.csv")
+    
     torch.save(h_dataset, "h_dataset.pt")
     
 else:
@@ -135,6 +160,9 @@ all_train_indices, all_valid_indices, all_test_indices = load_data_indices[:10],
 best_total_val = None
 
 if not test:
+    # Create DataFrame to store losses
+    losses_df = pd.DataFrame(columns=['epoch', 'node_train_loss', 'net_train_loss', 'node_val_loss', 'net_val_loss'])
+    
     for epoch in range(num_epochs):
         np.random.shuffle(all_train_indices)
         loss_node_all = 0
@@ -164,7 +192,13 @@ if not test:
                 loss_node_all += loss_node.item()
                 loss_net_all += loss_net.item()
                 all_train_idx += 1
-        print(loss_node_all/all_train_idx, loss_net_all/all_train_idx)
+            
+        # Calculate average losses for this epoch
+        avg_train_loss_node = loss_node_all/all_train_idx
+        avg_train_loss_net = loss_net_all/all_train_idx
+        train_losses_node.append(avg_train_loss_node)
+        train_losses_net.append(avg_train_loss_net)
+        print(f"Train losses - Node: {avg_train_loss_node:.4f}, Net: {avg_train_loss_net:.4f}")
     
         all_valid_idx = 0
         for data_idx in tqdm(all_valid_indices):
@@ -180,14 +214,71 @@ if not test:
                 
                 val_loss_node = criterion_node(node_representation, target_node.to(device))
                 val_loss_net = criterion_net(net_representation, target_net_demand.to(device))
-                val_loss_node_all +=  val_loss_node.item()
+                val_loss_node_all += val_loss_node.item()
                 val_loss_net_all += val_loss_net.item()
                 all_valid_idx += 1
-        print(val_loss_node_all/all_valid_idx, val_loss_net_all/all_valid_idx)
-    
+            
+        # Calculate average validation losses
+        avg_val_loss_node = val_loss_node_all/all_valid_idx
+        avg_val_loss_net = val_loss_net_all/all_valid_idx
+        val_losses_node.append(avg_val_loss_node)
+        val_losses_net.append(avg_val_loss_net)
+        print(f"Validation losses - Node: {avg_val_loss_node:.4f}, Net: {avg_val_loss_net:.4f}")
+        
+        # Save losses to DataFrame
+        new_row = pd.DataFrame({
+            'epoch': [epoch],
+            'node_train_loss': [avg_train_loss_node],
+            'net_train_loss': [avg_train_loss_net],
+            'node_val_loss': [avg_val_loss_node],
+            'net_val_loss': [avg_val_loss_net]
+        })
+        losses_df = pd.concat([losses_df, new_row], ignore_index=True)
+        
+        # Save DataFrame to CSV after each epoch
+        losses_df.to_csv(f'training_losses_{model_type}_{num_layer}_{num_dim}_{vn}_{trans}.csv', index=False)
+        
+        # Plot losses
+        plt.figure(figsize=(12, 5))
+        
+        # Node loss subplot
+        plt.subplot(1, 2, 1)
+        plt.plot(train_losses_node, label='Train Node Loss')
+        plt.plot(val_losses_node, label='Val Node Loss')
+        plt.title('Node Demand Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        
+        # Net loss subplot
+        plt.subplot(1, 2, 2)
+        plt.plot(train_losses_net, label='Train Net Loss')
+        plt.plot(val_losses_net, label='Val Net Loss')
+        plt.title('Net Demand Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        
+        plt.tight_layout()
+        plt.savefig(f'training_losses_{model_type}_{num_layer}_{num_dim}_{vn}_{trans}.png')
+        plt.close()
+
         if (best_total_val is None) or ((loss_node_all/all_train_idx) < best_total_val):
             best_total_val = loss_node_all/all_train_idx
             torch.save(model, f"{model_type}_{num_layer}_{num_dim}_{vn}_{trans}_model.pt")
+            
+            # Also save the loss values
+            loss_data = {
+                'train_losses_node': train_losses_node,
+                'train_losses_net': train_losses_net,
+                'val_losses_node': val_losses_node,
+                'val_losses_net': val_losses_net,
+                'best_epoch': epoch
+            }
+            torch.save(loss_data, f"{model_type}_{num_layer}_{num_dim}_{vn}_{trans}_losses.pt")
+
 else:
     all_test_idx = 0
     test_loss_node_all = 0
