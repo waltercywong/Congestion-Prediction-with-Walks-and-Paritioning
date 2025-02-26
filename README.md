@@ -1,4 +1,4 @@
-# 180B Workspace
+# Congestion Prediction in Chip Design with Walks and Paritioning
 
 Contains notebooks and python scripts for data analysis and model training on 
 the DEHNN data and model.
