@@ -69,7 +69,7 @@ val_losses_node = []
 val_losses_net = []
 
 if not reload_dataset:
-    dataset = NetlistDataset(data_dir="data/superblue", load_pe = True, pl = True, processed = True, load_indices=None, use_modified=False)
+    dataset = NetlistDataset(data_dir="data/superblue", load_pe = True, pl = True, processed = True, load_indices=None, use_modified=True)
     h_dataset = []
     
     # Create list to store VN features
@@ -224,6 +224,28 @@ if not test:
         val_losses_node.append(avg_val_loss_node)
         val_losses_net.append(avg_val_loss_net)
         print(f"Validation losses - Node: {avg_val_loss_node:.4f}, Net: {avg_val_loss_net:.4f}")
+        
+        # all_test_idx = 0
+        # test_loss_node_all = 0
+        # test_loss_net_all = 0
+        # for data_idx in tqdm(all_test_indices):
+        #     data = h_dataset[data_idx]
+        #     for inner_data_idx in range(len(data.variant_data_lst)):
+        #         target_node, target_net_hpwl, target_net_demand, batch, num_vn, vn_node = data.variant_data_lst[inner_data_idx]
+        #         data.batch = batch
+        #         data.num_vn = num_vn
+        #         data.vn = vn_node
+        #         node_representation, net_representation = model(data, device)
+        #         node_representation = torch.squeeze(node_representation)
+        #         net_representation = torch.squeeze(net_representation)
+                
+        #         test_loss_node = criterion_node(node_representation, target_node.to(device))
+        #         test_loss_net = criterion_net(net_representation, target_net_demand.to(device))
+        #         test_loss_node_all +=  test_loss_node.item()
+        #         test_loss_net_all += test_loss_net.item()
+        #         all_test_idx += 1
+        # print("avg test node demand mse: ", test_loss_node_all/all_test_idx)
+        # print("avg test net demand mse: ", test_loss_net_all/all_test_idx)
         
         # Save losses to DataFrame
         new_row = pd.DataFrame({

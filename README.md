@@ -1,24 +1,23 @@
-# 180B Workspace
+# Congestion Prediction in Chip Design with Walks and Paritioning
 
-Contains notebooks and python scripts for data analysis and model training on 
-the DEHNN data and model.
+This project explores congestion prediction in chip design by utilizing graph-based learning and partitioning techniques. By incorporating dummy connections and domain-aware clustering, the approach enhances long-range message passing in hypergraphs, which aims to improve the accuracy of congestion forecasts. The repository includes notebooks and Python scripts for analyzing DE-HNN data, training models, and experimenting with different means of long range communication and partitioning methods. These methods aim to refine congestion-aware design decisions, optimizing chip layouts for better performance and efficiency. The original model can be found [here](https://github.com/TILOS-AI-Institute/DEHNN) along with the paper found [here](https://arxiv.org/pdf/2404.00477) (Luo et al. (2024))
 
-## Instructions
+## Setup
 
-1. Make sure you have already downloaded the processed superblue data and placed 
-it in the de_hnn data folder.
+1. Download the data titled `superblue.zip` from [here](https://zenodo.org/records/14599896) and place
+the unzipped file in the `de_hnn/data` folder.
 
-2. Set up the environment with the requirements.txt from the DEHNN repository.
+3. Install Python (3.9) and installing dependencies by running `pip install -r requirements.txt`
 
-3. Place all the files in the `scripts` folder in the root directory of the 
+4. Place all the files in the `scripts` folder in the root directory of the 
 DEHNN repository. These scripts can be run to perform analysis, create 
 visualizations, or modify the processed data for the graph representation.
 
-4. Replace the `train_all_cross.py` file in the `de_hnn` folder and 
+5. Replace the `train_all_cross.py` file in the `de_hnn` folder and 
 `pyg_dataset.py` file in the `de_hnn\data` folder with those of the same name 
 in the `modified` folder.
 
-5. Run the notebook, analysis and model training scripts with the DEHNN 
+6. Run the notebook, analysis and model training scripts with the DEHNN 
 environment.
 
 ## File Structure
