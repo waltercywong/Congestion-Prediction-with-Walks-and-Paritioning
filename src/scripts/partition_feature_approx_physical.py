@@ -9,7 +9,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def partition_by_feature_similarity(node_features, num_clusters=5):
+def partition_by_feature_similarity(node_features, num_clusters=81):
     """
     Partitions nodes based on feature similarity using K-Means clustering.
     Specifically, we use the node features 7 through 15, which may approximate the physical closeness.
@@ -23,7 +23,9 @@ def partition_by_feature_similarity(node_features, num_clusters=5):
     """
     # Extract features 7 through 15
     # These features possibly? correspond to the physical closeness
-    features = node_features[:, 6:15]
+    #features = node_features[:, 6:15]
+    # Testing node type + top10 eigen only
+    features = node_features[:, [0, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]]
     kmeans = KMeans(n_clusters=num_clusters, random_state=42)
     labels = kmeans.fit_predict(features)
     
@@ -76,9 +78,9 @@ def main():
 
     for design in tqdm(design_list, desc="Processing designs", position=0):
         print(f"\nProcessing design {design}", flush=True)
-        file_path = f"data/superblue/superblue_{design}/pyg_data.pkl"
-        part_dict_path = f"data/superblue/superblue_{design}/feature_approx_physical_part_dict.pkl"
-        mod_path = f"data/superblue/superblue_{design}/feature_approx_physical_modularity.pkl"
+        file_path = f"./data/superblue/superblue_{design}/pyg_data.pkl"
+        part_dict_path = f"./data/superblue/superblue_{design}/feature_approx_physical_part_dict.pkl"
+        mod_path = f"./data/superblue/superblue_{design}/feature_approx_physical_modularity.pkl"
         
         # Load the PyTorch Geometric data
         data = torch.load(file_path)
@@ -109,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main() 
+
