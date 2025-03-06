@@ -105,7 +105,7 @@ def calculate_path_directness(row, pos_dict):
     return None
 
 def calculate_feature_entropy(feature_values, num_bins=10):
-    """Calculate entropy of feature values along paths with safety checks"""
+    """Calculate entropy of feature values along paths"""
     if len(feature_values) < 2:
         return 0.0
     
@@ -119,69 +119,42 @@ def calculate_feature_entropy(feature_values, num_bins=10):
         return 0.0
     return entropy(hist)
 
-def analyze_feature_patterns(feature_values, all_path_positions, design_values, path_efficiencies):
+def analyze_feature_patterns(feature_values, path_positions, design_values, path_efficiencies):
     """Analyze feature patterns including entropy"""
     pattern_stats = {}
     
-    # Calculate basic statistics
     valid_mask = ~np.isnan(feature_values)
     if np.sum(valid_mask) > 1:
-        # Gradient and consistency analysis
-        slopes = []
-        r_values = []
-        for design in np.unique(design_values):
-            mask = (design_values == design) & valid_mask
-            if np.sum(mask) > 1:
-                x = all_path_positions[mask]
-                y = feature_values[mask]
-                if len(np.unique(y)) > 1 and np.std(y) > 0:  # Check for non-zero variance
-                    slope, _, r_value, _, _ = linregress(x, y)
-                    slopes.append(slope)
-                    r_values.append(r_value)
-        
-        # Entropy analysis
+        # Calculate entropy
         feature_entropy = calculate_feature_entropy(feature_values[valid_mask])
         
-        # Position-based entropy
+        # Calculate position-based entropy
         position_entropy = []
         for pos in np.linspace(0, 1, 10):
-            pos_mask = (np.abs(all_path_positions - pos) < 0.1) & valid_mask
+            pos_mask = (np.abs(path_positions - pos) < 0.1) & valid_mask
             if np.sum(pos_mask) > 1:
                 pos_entropy = calculate_feature_entropy(feature_values[pos_mask])
                 position_entropy.append(pos_entropy)
             else:
-                position_entropy.append(0.0)  # Default value when not enough data
+                position_entropy.append(0.0)
         
-        # Efficiency correlation - with checks for valid data
-        valid_both = valid_mask & ~np.isnan(path_efficiencies)
-        if np.sum(valid_both) > 1 and np.std(feature_values[valid_both]) > 0 and np.std(path_efficiencies[valid_both]) > 0:
-            eff_corr = np.corrcoef(feature_values[valid_both], path_efficiencies[valid_both])[0,1]
-        else:
-            eff_corr = 0.0
+        # Calculate feature stability
+        feat_std = np.std(feature_values[valid_mask])
+        feat_stability = 1.0 / (feat_std + 1.0)
         
-        # Feature stability - with check for valid data
-        feat_std = np.std(feature_values[valid_mask]) if np.sum(valid_mask) > 1 else 1.0
-        feat_stability = 1.0 / (feat_std + 1.0)  # Add 1.0 to prevent division by zero
-        
-        # Combine metrics
-        pattern_stats = {
-            'mean_slope': float(np.mean(slopes)) if slopes else 0.0,
-            'slope_std': float(np.std(slopes)) if slopes else 0.0,
-            'mean_r2': float(np.mean(np.abs(r_values))) if r_values else 0.0,
-            'r2_std': float(np.std(np.abs(r_values))) if r_values else 0.0,
-            'entropy': float(feature_entropy),
-            'position_entropy': [float(e) for e in position_entropy],
-            'efficiency_correlation': float(eff_corr),
-            'stability': float(feat_stability)
-        }
-        
-        # Calculate importance score with safety checks
-        pattern_stats['importance_score'] = (
-            0.3 * pattern_stats['mean_r2'] +  # Consistency weight
-            0.3 * abs(pattern_stats['efficiency_correlation']) +  # Efficiency correlation weight
-            0.2 * (1.0 - pattern_stats['entropy'] / (np.log(10) + 1e-10)) +  # Entropy weight (normalized with safety)
-            0.2 * pattern_stats['stability']  # Stability weight
+        # Calculate importance score
+        importance_score = (
+            0.4 * feat_stability +  # Stability weight
+            0.3 * (1.0 - feature_entropy / np.log(10)) +  # Entropy weight
+            0.3 * (1.0 - np.mean(position_entropy) / np.log(10))  # Position entropy weight
         )
+        
+        pattern_stats = {
+            'entropy': float(feature_entropy),
+            'position_entropy': position_entropy,
+            'stability': float(feat_stability),
+            'importance_score': float(importance_score)
+        }
         
     return pattern_stats
 
@@ -789,6 +762,15 @@ print("3. Gradient Strength (20%): How strongly the feature changes along paths"
 print("4. Stability (20%): How stable the feature values are")
 print("\nHigher weights indicate features that are more reliable for guiding efficient paths.")
 print("When using these weights in random walks, prefer moves that follow patterns of high-weighted features.")
+
+# Save feature weights for use in weighted random walk
+feature_weights = {}
+for feat_idx in range(num_features):
+    if f'feature_{feat_idx+1}' in entropy_patterns:
+        feature_weights[feat_idx] = entropy_patterns[f'feature_{feat_idx+1}']
+
+with open('feature_weights.pkl', 'wb') as f:
+    pickle.dump(feature_weights, f)
 
 # Convert numpy types to Python types for JSON serialization
 def convert_to_serializable(obj):
