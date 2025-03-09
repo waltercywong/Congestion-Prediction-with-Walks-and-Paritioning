@@ -261,7 +261,7 @@ Every experiment we have conducted comes with its own requirements. Below are de
   2. Update `config.json` to set the method type to `kmeans`:
      ```json
      {
-       "method_type": "kmeans",
+       "method_type": "balanced",
        "load_pe": true,
        "load_pd": true,
        "num_eigen": 10,
@@ -277,33 +277,7 @@ Every experiment we have conducted comes with its own requirements. Below are de
 
 ---
 
-### 7. **XGBoost**
-- **Description**: This experiment uses XGBoost for generating or analyzing valid pairs.
-- **Steps**:
-  1. Run the XGBoost script:
-     ```
-     python valid_pairs_xgb.py
-     ```
-  2. Update `config.json` to set the method type to `xgb`:
-     ```json
-     {
-       "method_type": "xgb",
-       "load_pe": true,
-       "load_pd": true,
-       "num_eigen": 10,
-       "pl": true,
-       "processed": true,
-       "density": false
-     }
-     ```
-  3. Run the training script:
-     ```
-     python train_all_cross_run.py
-     ```
-
----
-
-### 8. **Weighted Walk**
+### 7. **Weighted Walk**
 - **Description**: This experiment uses weighted random walks for graph analysis.
 - **Steps**:
   1. Analyze paths in the graph:
@@ -327,6 +301,32 @@ Every experiment we have conducted comes with its own requirements. Below are de
      }
      ```
   4. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 8. **XGBoost**
+- **Description**: This experiment uses XGBoost for generating or analyzing valid pairs.
+- **Steps**:
+  1. Run the XGBoost script:
+     ```
+     python valid_pairs_xgb.py
+     ```
+  2. Update `config.json` to set the method type to `xgb`:
+     ```json
+     {
+       "method_type": "xgb",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
      ```
      python train_all_cross_run.py
      ```
