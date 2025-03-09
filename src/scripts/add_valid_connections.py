@@ -8,11 +8,11 @@ import os
 
 # Read both CSV files
 print("Reading CSV files...")
-valid_pairs_3 = pd.read_csv('valid_pairs_3.csv')
+valid_pairs = pd.read_csv('valid_pairs.csv')
 valid_pairs_test = pd.read_csv('valid_pairs_test.csv')
 
 # Combine the pairs from both files
-all_pairs = pd.concat([valid_pairs_3, valid_pairs_test], ignore_index=True)
+all_pairs = pd.concat([valid_pairs, valid_pairs_test], ignore_index=True)
 
 # Group pairs by design
 design_pairs = all_pairs.groupby('design')
