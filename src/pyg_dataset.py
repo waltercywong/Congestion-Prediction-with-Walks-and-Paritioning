@@ -60,7 +60,7 @@ class NetlistDataset(Dataset):
         filename_mapping = {
             "original": "pyg_data.pkl",
             "louvain": "pyg_data_comm.pkl",
-            "means": "pyg_data_means.pkl",
+            "kmeans": "pyg_data_means.pkl",
             "weighted": "pyg_data_ww.pkl",
             "balanced": "pyg_data_balanced_means.pkl",
             "random_walk": "pyg_data_rw.pkl",
