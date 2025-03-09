@@ -36,6 +36,7 @@ The repository includes notebooks and Python scripts for data analysis, model tr
 │   ├───valid_pairs_test.py
 │   ├───valid_pairs_weighted.py
 │   ├───valid_pairs_xgb.py
+│   ├───trained_xgb_model.pkl
 │   └───valid_pairs.py
 ├───results
 │   ├───BalancedKMeans
@@ -71,6 +72,7 @@ The repository includes notebooks and Python scripts for data analysis, model tr
    * `valid_pairs_test.py`: Tests the functionality of the valid_pairs.py script.
    * `valid_pairs_weighted.py`: Generates or processes valid pairs with weighted edges.
    * `valid_pairs_xgb.py`: Uses XGBoost to generate or analyze valid pairs.
+   * `trained_xgb_model.pkl`: Contains the trained XGBoost model for predictions.
    * `valid_pairs.py`: Generates the valid_pairs.csv file.
 
 * `README.md`: Documentation file providing an overview of the repository and instructions for use.
@@ -108,12 +110,272 @@ the unzipped file in the `data` folder.
 ```python run_all_data.py```
 
 
-. Run the notebook, analysis and model training scripts with the DEHNN 
-environment.
 
 ## Running Each Experiment
 
-Every experiment we have conducted comes with its own requirements, in the following section, we will instruct how to run each of our tests.
+Every experiment we have conducted comes with its own requirements. Below are detailed instructions on how to run each of our tests. Ensure that the `config.json` file is properly configured for each experiment before running the training script (`train_all_cross_run.py`).
 
-### 1. 
+---
+
+### 1. **Baseline**
+- **Description**: This is the default experiment using the original configuration.
+- **Steps**:
+  1. Ensure `config.json` is set to the original configuration:
+     ```json
+     {
+       "method_type": "original",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  2. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 2. **Louvain**
+- **Description**: This experiment uses the Louvain method for community detection.
+- **Steps**:
+  1. Run the Louvain creation script:
+     ```
+     python louvain_creation.py
+     ```
+  2. Update `config.json` to set the method type to `louvain`:
+     ```json
+     {
+       "method_type": "louvain",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 3. **RandomWalk**
+- **Description**: This experiment uses random walks to generate graph representations.
+- **Steps**:
+  1. Run the random walk representation script:
+     ```
+     python random_walk_rep.py
+     ```
+  2. Update `config.json` to set the method type to `random_walk`:
+     ```json
+     {
+       "method_type": "random_walk",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 4. **Connections**
+- **Description**: This experiment focuses on generating and validating connections between nodes.
+- **Steps**:
+  1. Generate valid pairs:
+     ```
+     python valid_pairs.py
+     ```
+  2. Test the valid pairs:
+     ```
+     python valid_pairs_test.py
+     ```
+  3. Add valid connections to the dataset:
+     ```
+     python add_valid_connections.py
+     ```
+  4. Update `config.json` to set the method type to `connection`:
+     ```json
+     {
+       "method_type": "connection",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  5. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 5. **KMeans**
+- **Description**: This experiment uses KMeans clustering for partitioning the graph.
+- **Steps**:
+  1. Run the balanced feature approximation script:
+     ```
+     python partition_balanced_feature_approx_physical.py
+     ```
+  2. Update `config.json` to set the method type to `kmeans`:
+     ```json
+     {
+       "method_type": "kmeans",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 6. **BalancedKMeans**
+- **Description**: This experiment uses a balanced version of KMeans clustering.
+- **Steps**:
+  1. Run the feature approximation script:
+     ```
+     python partition_feature_approx_physical.py
+     ```
+  2. Update `config.json` to set the method type to `kmeans`:
+     ```json
+     {
+       "method_type": "kmeans",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 7. **XGBoost**
+- **Description**: This experiment uses XGBoost for generating or analyzing valid pairs.
+- **Steps**:
+  1. Run the XGBoost script:
+     ```
+     python valid_pairs_xgb.py
+     ```
+  2. Update `config.json` to set the method type to `xgb`:
+     ```json
+     {
+       "method_type": "xgb",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 8. **Weighted Walk**
+- **Description**: This experiment uses weighted random walks for graph analysis.
+- **Steps**:
+  1. Analyze paths in the graph:
+     ```
+     python analyze_paths.py
+     ```
+  2. Generate weighted valid pairs:
+     ```
+     python valid_pairs_weighted.py
+     ```
+  3. Update `config.json` to set the method type to `weighted`:
+     ```json
+     {
+       "method_type": "weighted",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  4. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+---
+
+### 9. **XGBoostLimited**
+- **Description**: This experiment uses a limited version of XGBoost for generating valid pairs.
+- **Steps**:
+  1. Run the limited XGBoost script:
+     ```
+     python valid_pairs_limited.py
+     ```
+  2. Update `config.json` to set the method type to `xgb_lim`:
+     ```json
+     {
+       "method_type": "xgb_lim",
+       "load_pe": true,
+       "load_pd": true,
+       "num_eigen": 10,
+       "pl": true,
+       "processed": true,
+       "density": false
+     }
+     ```
+  3. Run the training script:
+     ```
+     python train_all_cross_run.py
+     ```
+
+Results will be saved in the same folder (`/src`)
+
+---
+
+### **Config File (`config.json`)**
+The `config.json` file is central to all experiments. Ensure it is updated with the correct `method_type` and other parameters before running `train_all_cross_run.py`. Here is the default configuration:
+```json
+{
+  "method_type": "original",
+  "load_pe": true,
+  "load_pd": true,
+  "num_eigen": 10,
+  "pl": true,
+  "processed": true,
+  "density": false
+}
+```
+
+---
+
+Thank you for viewing and running our project!
 
