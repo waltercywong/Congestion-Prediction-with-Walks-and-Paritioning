@@ -13,16 +13,6 @@ The repository includes notebooks and Python scripts for data analysis, model tr
 ```
 |
 ├───data
-├───results
-│   ├───BalancedKMeans
-│   ├───Baseline
-│   ├───Connections
-│   ├───KMeans
-│   ├───Louvain
-│   ├───RandomWalk
-│   ├───WeightedWalk
-│   ├───XGBoost
-│   └───XGBoostLimited
 ├───src
 │   ├───models
 │   ├───notebooks
@@ -47,6 +37,16 @@ The repository includes notebooks and Python scripts for data analysis, model tr
 │   ├───valid_pairs_weighted.py
 │   ├───valid_pairs_xgb.py
 │   └───valid_pairs.py
+├───results
+│   ├───BalancedKMeans
+│   ├───Baseline
+│   ├───Connections
+│   ├───KMeans
+│   ├───Louvain
+│   ├───RandomWalk
+│   ├───WeightedWalk
+│   ├───XGBoost
+│   └───XGBoostLimited
 ├───README.md
 └───requirements.txt
 ```
