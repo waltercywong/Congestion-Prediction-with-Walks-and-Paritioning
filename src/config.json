@@ -1,0 +1,9 @@
+{
+    "method_type": "original",
+    "load_pe": true,
+    "load_pd": true,
+    "num_eigen": 10,
+    "pl": true,
+    "processed": true,
+    "density": false
+}
