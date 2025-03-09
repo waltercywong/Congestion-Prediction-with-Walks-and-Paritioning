@@ -1,4 +1,5 @@
 import os
+import sys
 import torch
 import torch.nn
 from torch_geometric.data import Dataset
@@ -9,10 +10,20 @@ import numpy as np
 
 from utils import *
 
+# Get the current directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (one level above)
+parent_dir = os.path.dirname(current_dir)
+
+# Add the parent directory to sys.path to access the models folder
+sys.path.append(parent_dir)
+
 class NetlistDataset(Dataset):
     def __init__(self, data_dir, load_pe=True, load_pd=True, num_eigen=10, pl=True, processed=True, load_indices=None, density=False, method_type="original"):
         super().__init__()
-        self.data_dir = data_dir
+        # Set data_dir to the correct path
+        self.data_dir = os.path.join(parent_dir, "data", "superblue")
         self.data_lst = []
         self.load_pe = load_pe
         self.load_pd = load_pd
@@ -22,20 +33,20 @@ class NetlistDataset(Dataset):
         # Determine the processed filename based on the method
         self.processed_filename = self._get_processed_filename()
 
-        all_files = np.array(os.listdir(data_dir))
+        all_files = np.array(os.listdir(self.data_dir))
         
         if load_indices is not None:
             load_indices = np.array(load_indices)
             all_files = all_files[load_indices]
             
         for design_fp in tqdm(all_files):
-            data_load_fp = os.path.join(data_dir, design_fp, self.processed_filename)
+            data_load_fp = os.path.join(self.data_dir, design_fp, self.processed_filename)
             if processed and os.path.exists(data_load_fp):
                 data = torch.load(data_load_fp)
                 self._print_loading_message()
             else:
                 if self.method_type in ["original", "louvain", "means", "balanced"]:
-                    data = self._process_design(data_dir, design_fp)
+                    data = self._process_design(self.data_dir, design_fp)
                 else:
                     raise FileNotFoundError(
                         f"Processed file {self.processed_filename} not found for design {design_fp}. "

@@ -18,9 +18,15 @@ from collections import Counter
 import sys
 import matplotlib.pyplot as plt
 
-# Add paths to sys.path
-sys.path.insert(1, 'data/')
-sys.path.append("models/layers/")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (one level above)
+parent_dir = os.path.dirname(current_dir)
+
+# Define the data directory
+data_dir = os.path.join(parent_dir, "data", "superblue")
+
+sys.path.append(parent_dir)
 
 # Import custom modules
 from pyg_dataset import NetlistDataset
