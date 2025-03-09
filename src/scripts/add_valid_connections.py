@@ -24,8 +24,8 @@ for design in tqdm(design_list, desc="Processing designs"):
     print(f"\nProcessing design {design}")
     
     # Load original pyg data
-    file_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data.pkl"
-    output_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data_with_valid.pkl"
+    file_path = os.path.join("..", "..", "data", "superblue", f"superblue_{design}", "pyg_data.pkl")
+    output_path = os.path.join("..", "..", "data", "superblue", f"superblue_{design}", "pyg_data_with_valid.pkl")
     
     with open(file_path, 'rb') as file:
         data = torch.load(file)

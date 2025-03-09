@@ -1,3 +1,4 @@
+import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', category=UserWarning, message='X does not have valid feature names')
@@ -10,9 +11,20 @@ import torch
 import random
 import pickle
 
+# Set random seeds for reproducibility
 random.seed(42)
 np.random.seed(42)
 torch.manual_seed(42)
+
+# Get the current directory (src/scripts)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (src)
+parent_dir = os.path.dirname(current_dir)
+
+# Define the data directory (data/superblue)
+# Navigate from src/scripts to data/superblue using ".."
+data_dir = os.path.join(parent_dir, "..", "data", "superblue")
 
 def extract_features(source_features, dest_features):
     """
@@ -107,9 +119,11 @@ for design in tqdm(design_list, desc="Processing designs", position=0):
     design_total_pairs = 0
     design_valid_pairs = 0
     
-    file_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data.pkl"
+    # Construct file path using data_dir
+    file_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data.pkl")
     with open(file_path, 'rb') as file:
         data = torch.load(file)
+    
     source_to_net = data['edge_index_source_to_net']
     sink_to_net = data['edge_index_sink_to_net']
     node_features = data['node_features']
@@ -191,8 +205,8 @@ for design in tqdm(design_list, desc="Processing designs"):
     print(f"\nProcessing design {design}")
     
     # Load original pyg data
-    file_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data.pkl"
-    output_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data_with_valid_xgb.pkl"
+    file_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data.pkl")
+    output_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data_with_valid_xgb.pkl")
     
     with open(file_path, 'rb') as file:
         data = torch.load(file)
@@ -273,4 +287,4 @@ for design in tqdm(design_list, desc="Processing designs"):
     
     torch.save(data, output_path)
 
-print("\nProcessing complete! Modified data saved to pyg_data_with_valid_xgb.pkl files") 
+print("\nProcessing complete! Modified data saved to pyg_data_with_valid_xgb.pkl files")

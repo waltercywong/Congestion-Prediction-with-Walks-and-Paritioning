@@ -3,6 +3,7 @@ import numpy as np
 import networkx as nx
 import community.community_louvain as community
 import pickle
+import os
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -61,13 +62,19 @@ def compute_modularity(G, partition):
 
 
 def main():
-    design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16]
+    design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16,18,19]
 
     for design in tqdm(design_list, desc="Processing designs", position=0):
         print(f"\nProcessing design {design}", flush=True)
-        file_path = f"de_hnn/data/superblue/superblue_{design}/bipartite.pkl"
-        com_path = f"de_hnn/data/superblue/superblue_{design}/community.pkl"
-        mod_path = f"de_hnn/data/superblue/superblue_{design}/modularity.pkl"
+        
+        # Adjust the file paths to be relative to the project root
+        file_path = os.path.join("..", "..", "data", "superblue", f"superblue_{design}", "bipartite.pkl")
+        com_path = os.path.join("..", "..", "data", "superblue", f"superblue_{design}", "community.pkl")
+        mod_path = os.path.join("..", "..", "data", "superblue", f"superblue_{design}", "modularity.pkl")
+
+        # Ensure the directories exist
+        os.makedirs(os.path.dirname(com_path), exist_ok=True)
+        os.makedirs(os.path.dirname(mod_path), exist_ok=True)
 
         with open(file_path, 'rb') as file:
             data = pickle.load(file)
@@ -83,7 +90,6 @@ def main():
 
         # Step 1: Automatically detect communities
         partition = detect_communities_louvain(G)
-        # print("Detected communities:", partition)
         with open(com_path, "wb") as file:
             pickle.dump(partition, file)
 
@@ -95,4 +101,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

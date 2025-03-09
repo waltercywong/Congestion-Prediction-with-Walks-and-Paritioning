@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,12 +7,12 @@ from ast import literal_eval
 from collections import defaultdict
 import json
 import warnings
-import os
 import pickle
 import torch
 from scipy.stats import linregress, entropy
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
+
 warnings.filterwarnings('ignore')
 
 # Create directory for plots if it doesn't exist
@@ -618,48 +619,6 @@ for feat_idx in range(num_features):
         pattern_metrics['efficiency_based'][f'feature_{feat_idx+1}']['efficiency_bin_means'].append(
             float(np.nanmean(bin_values)))
 
-# Add visualizations
-print("\nGenerating pattern visualizations...")
-os.makedirs('path_analysis_plots/patterns', exist_ok=True)
-
-# 1. Feature evolution heatmap
-plt.figure(figsize=(15, 10))
-feature_evolution = np.zeros((num_features, 100))
-for feat_idx in range(num_features):
-    if not np.all(np.isnan(feature_values[feat_idx])):
-        for pos in range(100):
-            mask = path_indices == pos
-            feature_evolution[feat_idx, pos] = np.nanmean(feature_values[feat_idx][mask])
-
-sns.heatmap(feature_evolution, cmap='viridis')
-plt.title('Feature Evolution Along Paths')
-plt.xlabel('Position in Path (%)')
-plt.ylabel('Feature Index')
-plt.savefig('path_analysis_plots/patterns/feature_evolution_heatmap.png')
-plt.close()
-
-# 2. Feature importance distribution
-plt.figure(figsize=(12, 6))
-plt.bar(range(1, num_features+1), feature_importance)
-plt.title('Feature Importance Distribution')
-plt.xlabel('Feature Index')
-plt.ylabel('Importance Score')
-plt.savefig('path_analysis_plots/patterns/feature_importance_distribution.png')
-plt.close()
-
-# 3. Key features correlation matrix
-if key_features:
-    key_feature_data = np.array([feature_values[i-1] for i in key_features])
-    key_feature_corr = np.corrcoef(key_feature_data)
-    
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(key_feature_corr, annot=True, cmap='coolwarm',
-                xticklabels=[f'F{i}' for i in key_features],
-                yticklabels=[f'F{i}' for i in key_features])
-    plt.title('Key Features Correlation Matrix')
-    plt.savefig('path_analysis_plots/patterns/key_features_correlation.png')
-    plt.close()
-
 # Add pattern metrics to results
 results['pattern_metrics'] = pattern_metrics
 
@@ -787,4 +746,4 @@ with open('path_analysis_results.json', 'w') as f:
     json.dump(serializable_results, f, indent=4)
 
 print("\nVisualization plots have been saved in the 'path_analysis_plots' directory.")
-print("\nDetailed analysis complete. Results saved to path_analysis_results.json") 
+print("\nDetailed analysis complete. Results saved to path_analysis_results.json")

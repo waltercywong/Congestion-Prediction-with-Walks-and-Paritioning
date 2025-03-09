@@ -65,7 +65,8 @@ class NetlistDataset(Dataset):
             "balanced": "pyg_data_balanced_means.pkl",
             "random_walk": "pyg_data_rw.pkl",
             "xgb": "pyg_data_with_valid_xgb.pkl",
-            "xgb_lim": "pyg_data_with_valid_limited.pkl"
+            "xgb_lim": "pyg_data_with_valid_limited.pkl",
+            "connection": "pyg_data_with_valid.pkl"
         }
         return filename_mapping.get(self.method_type, "pyg_data.pkl")
 

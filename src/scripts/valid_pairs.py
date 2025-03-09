@@ -1,3 +1,4 @@
+import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -8,14 +9,20 @@ import numpy as np
 import torch
 import random
 
+# Set random seeds for reproducibility
 random.seed(42)
 np.random.seed(42)
 torch.manual_seed(42)
-# if torch.cuda.is_available():
-#     torch.cuda.manual_seed(42)
-#     torch.cuda.manual_seed_all(42)
-#     torch.backends.cudnn.deterministic = True
-#     torch.backends.cudnn.benchmark = False
+
+# Get the current directory (src/scripts)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (src)
+parent_dir = os.path.dirname(current_dir)
+
+# Define the data directory (data/superblue)
+# Navigate from src/scripts to data/superblue using ".."
+data_dir = os.path.join(parent_dir, "..", "data", "superblue")
 
 def random_walk_no_revisit(start_node, source_to_net, sink_to_net, max_steps=100):
     """
@@ -60,6 +67,7 @@ def random_walk_no_revisit(start_node, source_to_net, sink_to_net, max_steps=100
         visited.add(next_node)
         path.append(next_node)
         current_node = next_node
+    
     # Calculate distances from start position
     start_pos = data['pos_lst'][start_node]
     distances = []
@@ -76,9 +84,11 @@ num_sources = 5000
 # Outer progress bar for designs
 for design in tqdm(design_list, desc="Processing designs", position=0):
     print(f"\nProcessing design {design}", flush=True)
-    file_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data.pkl"
+    # Construct file path using data_dir
+    file_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data.pkl")
     with open(file_path, 'rb') as file:
         data = torch.load(file)
+    
     source_to_net = data['edge_index_source_to_net']
     sink_to_net = data['edge_index_sink_to_net']
     node_features = data['node_features']  # Get node features
@@ -94,8 +104,6 @@ for design in tqdm(design_list, desc="Processing designs", position=0):
     start_cell_list = source_to_net[0][torch.randperm(len(source_to_net[0]))[:num_sources]]
     for i in range(num_sources):
         start_cell = start_cell_list[i].item()
-        # start_cell = source_to_net[0][torch.randint(0, len(source_to_net[0]), (1,))].item()
-        start_net = source_to_net[1][source_to_net[0] == start_cell]
         path = random_walk_no_revisit(start_cell, source_to_net, sink_to_net)
         for j in range(5, len(path)):
             if path[j][1] < 0.01:

@@ -1,3 +1,4 @@
+import os
 from tqdm import tqdm
 import numpy as np
 import networkx as nx
@@ -8,6 +9,15 @@ import torch
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# Get the current directory (src/scripts)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (src)
+parent_dir = os.path.dirname(current_dir)
+
+# Define the data directory (data/superblue)
+# Navigate from src/scripts to data/superblue using ".."
+data_dir = os.path.join(parent_dir, "..", "data", "superblue")
 
 def partition_by_feature_similarity(node_features, num_clusters=81):
     """
@@ -74,13 +84,14 @@ def compute_modularity(G, partition):
 
 
 def main():
-    design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16]
+    design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16, 18, 19]
 
     for design in tqdm(design_list, desc="Processing designs", position=0):
         print(f"\nProcessing design {design}", flush=True)
-        file_path = f"./data/superblue/superblue_{design}/pyg_data.pkl"
-        part_dict_path = f"./data/superblue/superblue_{design}/feature_approx_physical_part_dict.pkl"
-        mod_path = f"./data/superblue/superblue_{design}/feature_approx_physical_modularity.pkl"
+        # Construct file paths using data_dir
+        file_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data.pkl")
+        part_dict_path = os.path.join(data_dir, f"superblue_{design}", "feature_approx_physical_part_dict.pkl")
+        mod_path = os.path.join(data_dir, f"superblue_{design}", "feature_approx_physical_modularity.pkl")
         
         # Load the PyTorch Geometric data
         data = torch.load(file_path)
@@ -110,5 +121,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
-
+    main()

@@ -52,8 +52,17 @@ def random_walk(start_node, source_to_net, sink_to_net, data, max_steps=100):
         distances.append((node, round(dist.item(), 7)))
     return distances
 
+# Get the current directory (src/scripts)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (src)
+parent_dir = os.path.dirname(current_dir)
+
+# Define the data directory (data/superblue)
+# Navigate from src/scripts to data/superblue using ".."
+data_dir = os.path.join(parent_dir, "..", "data", "superblue")
+
 # Get all available designs
-data_dir = "de_hnn/data/superblue"
 design_list = []
 for d in os.listdir(data_dir):
     if d.startswith("superblue"):
@@ -71,7 +80,7 @@ print(f"Found {len(design_list)} designs: {design_list}")
 # Outer progress bar for designs
 for design in tqdm(design_list, desc="Processing designs", position=0):
     print(f"\nProcessing design {design}", flush=True)
-    file_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data.pkl"
+    file_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data.pkl")
     
     # Load original data
     with open(file_path, 'rb') as file:
@@ -162,7 +171,7 @@ for design in tqdm(design_list, desc="Processing designs", position=0):
         ])
     
     # Save modified data
-    save_path = f"de_hnn/data/superblue/superblue_{design}/pyg_data_modified.pkl"
+    save_path = os.path.join(data_dir, f"superblue_{design}", "pyg_data_modified.pkl")
     torch.save(modified_data, save_path)
     print(f"Saved modified data to {save_path}")
     print(f"Added {len(new_source_edges)} new connections")

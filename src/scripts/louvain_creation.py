@@ -1,3 +1,4 @@
+import os
 from tqdm import tqdm
 import numpy as np
 import networkx as nx
@@ -7,6 +8,15 @@ import pickle
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# Get the current directory (src/scripts)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Get the parent directory (src)
+parent_dir = os.path.dirname(current_dir)
+
+# Define the data directory (data/superblue)
+# Navigate from src/scripts to data/superblue using ".."
+data_dir = os.path.join(parent_dir, "..", "data", "superblue")
 
 def detect_communities_louvain(G):
     """
@@ -19,7 +29,6 @@ def detect_communities_louvain(G):
     dict: Partition mapping nodes to community IDs.
     """
     return community.best_partition(G)
-
 
 def compute_modularity(G, partition):
     """
@@ -59,15 +68,15 @@ def compute_modularity(G, partition):
     
     return Q
 
-
 def main():
-    design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16]
+    design_list = [1, 2, 3, 5, 6, 7, 9, 11, 14, 16, 18, 19]
 
     for design in tqdm(design_list, desc="Processing designs", position=0):
         print(f"\nProcessing design {design}", flush=True)
-        file_path = f"data/superblue/superblue_{design}/bipartite.pkl"
-        com_path = f"data/superblue/superblue_{design}/community.pkl"
-        mod_path = f"data/superblue/superblue_{design}/modularity.pkl"
+        # Construct file paths using data_dir
+        file_path = os.path.join(data_dir, f"superblue_{design}", "bipartite.pkl")
+        com_path = os.path.join(data_dir, f"superblue_{design}", "community.pkl")
+        mod_path = os.path.join(data_dir, f"superblue_{design}", "modularity.pkl")
 
         with open(file_path, 'rb') as file:
             data = pickle.load(file)
@@ -93,6 +102,5 @@ def main():
         with open(mod_path, "wb") as file:
             pickle.dump(modularity, file)
 
-
 if __name__ == "__main__":
-    main() 
+    main()
