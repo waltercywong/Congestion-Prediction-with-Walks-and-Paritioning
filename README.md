@@ -48,6 +48,8 @@ The repository includes notebooks and Python scripts for data analysis, model tr
 │   ├───WeightedWalk
 │   ├───XGBoost
 │   └───XGBoostLimited
+├───Congestion_Prediction_Research_Paper.pdf
+├───Congestion_Prediction_Poster.pdf
 ├───README.md
 └───requirements.txt
 ```
@@ -77,6 +79,8 @@ The repository includes notebooks and Python scripts for data analysis, model tr
 
 * `README.md`: Documentation file providing an overview of the repository and instructions for use.
 * `requirements.txt`: Lists all Python dependencies required to run the scripts and notebooks.
+* `Congestion_Prediction_Research_Paper.pdf`: PDF file of research paper for project.
+* `Congestion_Prediction_Poster.pdf`: PDF file of paper accompanying project.
 
 * `results`:
    * `Baseline`: contains DEHNN baseline model implementation results
